@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi } from '../lib/api';
-import { Badge, Empty, Pagination, PageHeader, Spinner } from '../components/UI';
+import { Badge, Empty, Modal, Pagination, PageHeader, Spinner } from '../components/UI';
+import ProposalView from '../components/ProposalView';
 import Select from '../components/Select';
 import { STATUS_DOTS } from '../components/Controls';
 
@@ -15,6 +16,7 @@ export default function Applications() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
+  const [viewing, setViewing] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -64,6 +66,7 @@ export default function Applications() {
                   <th className="th">Candidate</th>
                   <th className="th">Role</th>
                   <th className="th">Applied</th>
+                  <th className="th">Proposal</th>
                   <th className="th">Status</th>
                   <th className="th">Move to</th>
                 </tr>
@@ -80,6 +83,21 @@ export default function Applications() {
                       <p className="text-xs text-ink-500">{a.job?.company}</p>
                     </td>
                     <td className="td text-ink-500">{new Date(a.createdAt).toLocaleDateString()}</td>
+                    <td className="td">
+                      <button className="group text-left" onClick={() => setViewing(a)}>
+                        <span className="flex flex-wrap items-center gap-1.5 text-xs">
+                          {a.proposal?.expectedPay?.amount ? (
+                            <span className="rounded-md bg-green-50 px-1.5 py-0.5 font-semibold text-green-700">
+                              {a.proposal.expectedPay.currency} {Number(a.proposal.expectedPay.amount).toLocaleString()}/{a.proposal.expectedPay.period === 'hour' ? 'hr' : 'mo'}
+                            </span>
+                          ) : null}
+                          {a.proposal?.attachments?.length ? (
+                            <span className="rounded-md bg-brand-50 px-1.5 py-0.5 font-semibold text-brand-700">📎 {a.proposal.attachments.length}</span>
+                          ) : null}
+                        </span>
+                        <span className="mt-1 block text-xs font-semibold text-brand-600 group-hover:underline">View proposal →</span>
+                      </button>
+                    </td>
                     <td className="td"><Badge value={a.status} /></td>
                     <td className="td">
                       <Select
@@ -96,13 +114,17 @@ export default function Applications() {
                     </td>
                   </tr>
                 ))}
-                {!result?.data.length ? <tr><td colSpan={5}><Empty title="No applications here" /></td></tr> : null}
+                {!result?.data.length ? <tr><td colSpan={6}><Empty title="No applications here" /></td></tr> : null}
               </tbody>
             </table>
           </div>
         )}
         <Pagination page={page} pages={Math.ceil((result?.pagination?.total || 0) / LIMIT)} onChange={setPage} />
       </div>
+
+      <Modal open={!!viewing} onClose={() => setViewing(null)} title="Proposal" wide>
+        {viewing ? <ProposalView application={viewing} /> : null}
+      </Modal>
     </>
   );
 }

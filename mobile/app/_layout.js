@@ -61,6 +61,9 @@ export default function RootLayout() {
               <Stack.Screen name="job/[id]" options={{ presentation: 'card' }} />
               <Stack.Screen name="edit-profile" options={{ presentation: 'modal' }} />
               <Stack.Screen name="change-password" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="proposal/[jobId]" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="portfolio" options={{ presentation: 'card' }} />
+              <Stack.Screen name="portfolio-edit" options={{ presentation: 'modal' }} />
             </Stack>
           </AuthGate>
         )}

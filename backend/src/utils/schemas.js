@@ -2,6 +2,24 @@ const { z } = require('zod');
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, 'Invalid id');
 
+// Only http(s) links: these are rendered as clickable links in the admin console
+const httpUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .url('Enter a valid link')
+  .refine((u) => /^https?:\/\//i.test(u), 'Link must start with http:// or https://');
+
+const AVAILABILITY = ['immediately', '1-week', '2-weeks', '1-month', 'flexible'];
+
+const portfolioItem = z.object({
+  title: z.string().trim().min(2).max(100),
+  description: z.string().trim().max(600).optional(),
+  link: httpUrl.optional().or(z.literal('')),
+  role: z.string().trim().max(80).optional(),
+  skills: z.array(z.string().trim().min(1).max(40)).max(15).optional(),
+});
+
 const register = z.object({
   name: z.string().trim().min(2).max(80),
   email: z.string().trim().toLowerCase().email(),
@@ -82,6 +100,14 @@ const jobQuery = z.object({
 
 const applyBody = z.object({
   coverNote: z.string().max(1000).optional(),
+  expectedPay: z
+    .object({
+      amount: z.number().positive().max(100000000),
+      period: z.enum(['month', 'hour']),
+    })
+    .optional(),
+  availability: z.enum(AVAILABILITY).optional(),
+  portfolioIds: z.array(objectId).max(3, 'Attach up to 3 projects').optional(),
 });
 
 const aiCoverNote = z.object({
@@ -119,6 +145,7 @@ module.exports = {
   jobQuery,
   applyBody,
   aiCoverNote,
+  portfolioItem,
   swipeBody,
   applicationStatus,
   notificationInput,

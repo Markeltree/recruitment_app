@@ -55,6 +55,41 @@ function Progress({ status, baseDelay }) {
   );
 }
 
+const AVAIL_LABELS = { immediately: 'Immediately', '1-week': 'In 1 week', '2-weeks': 'In 2 weeks', '1-month': 'In a month', flexible: 'Flexible' };
+
+// What was sent with the proposal: rate, attachments, start date
+function ProposalChips({ proposal }) {
+  const pay = proposal?.expectedPay;
+  const files = proposal?.attachments?.length || 0;
+  if (!pay?.amount && !files && !proposal?.availability) return null;
+  return (
+    <View className="mt-3 flex-row flex-wrap gap-1.5">
+      {pay?.amount ? (
+        <View className="flex-row items-center rounded-lg bg-green-50 px-2 py-1">
+          <Ionicons name="cash-outline" size={12} color="#15803D" />
+          <Text className="ml-1 text-xs font-semibold text-green-700">
+            {pay.currency} {pay.amount.toLocaleString()}/{pay.period === 'hour' ? 'hr' : 'mo'}
+          </Text>
+        </View>
+      ) : null}
+      {files ? (
+        <View className="flex-row items-center rounded-lg bg-brand-50 px-2 py-1">
+          <Ionicons name="attach" size={12} color="#1F55E0" />
+          <Text className="ml-1 text-xs font-semibold text-brand-700">
+            {files} project{files > 1 ? 's' : ''}
+          </Text>
+        </View>
+      ) : null}
+      {proposal?.availability ? (
+        <View className="flex-row items-center rounded-lg bg-ink-100 px-2 py-1">
+          <Ionicons name="calendar-outline" size={12} color="#475569" />
+          <Text className="ml-1 text-xs font-semibold text-ink-700">{AVAIL_LABELS[proposal.availability]}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export default function Applications() {
   const router = useRouter();
   const { scrollY, onScroll } = useScrollHeader();
@@ -178,6 +213,8 @@ export default function Applications() {
                   <StatusBadge status={item.status} />
                 </Animated.View>
               </View>
+
+              <ProposalChips proposal={item.proposal} />
 
               <Progress status={item.status} baseDelay={200 + Math.min(index, 8) * 60} />
 

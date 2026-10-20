@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminApi } from '../lib/api';
 import { Badge, PageHeader, Spinner } from '../components/UI';
 import UserActivity from '../components/UserActivity';
+import { ProjectCard } from '../components/ProposalView';
 
 export default function UserDetail() {
   const { id } = useParams();
@@ -67,6 +68,18 @@ export default function UserDetail() {
             </div>
           </div>
           <Info label="Bio" value={user.bio} />
+          <div>
+            <p className="label">Portfolio ({user.portfolio?.length || 0})</p>
+            {user.portfolio?.length ? (
+              <div className="space-y-2.5">
+                {user.portfolio.map((p) => (
+                  <ProjectCard key={p._id} p={p} />
+                ))}
+              </div>
+            ) : (
+              <span className="text-sm text-ink-500">No projects added</span>
+            )}
+          </div>
         </div>
 
         <div className="card lg:col-span-2 animate-fadeUp">

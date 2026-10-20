@@ -13,6 +13,18 @@ const experienceSchema = new mongoose.Schema(
   { _id: true }
 );
 
+// A past project the candidate can attach to proposals
+const portfolioItemSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true, maxlength: 100 },
+    description: { type: String, maxlength: 600 },
+    link: { type: String, maxlength: 500 },
+    role: { type: String, maxlength: 80 },
+    skills: [String],
+  },
+  { _id: true, timestamps: true }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 80 },
@@ -27,6 +39,7 @@ const userSchema = new mongoose.Schema(
     location: String,
     skills: [String],
     experience: [experienceSchema],
+    portfolio: { type: [portfolioItemSchema], default: [] },
     preferences: {
       jobTypes: { type: [String], default: [] },
       minSalary: Number,

@@ -69,6 +69,9 @@ router.get('/ai/match/:jobId', requireAuth, aiLimiter(60), H(ai.matchInsight));
 // ---------- Users / profile ----------
 router.patch('/users/me', requireAuth, validate(s.profileUpdate), H(users.updateProfile));
 router.get('/users/me/stats', requireAuth, H(users.stats));
+router.post('/users/me/portfolio', requireAuth, validate(s.portfolioItem), H(users.addPortfolioItem));
+router.patch('/users/me/portfolio/:itemId', requireAuth, validate(s.portfolioItem.partial()), H(users.updatePortfolioItem));
+router.delete('/users/me/portfolio/:itemId', requireAuth, H(users.removePortfolioItem));
 router.delete('/users/me', requireAuth, H(users.deleteAccount));
 
 // ---------- Notifications ----------

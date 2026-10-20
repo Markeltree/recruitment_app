@@ -102,7 +102,7 @@ export default function Profile() {
     ]);
 
   // Profile strength: share of the key fields the user has filled in
-  const fields = [user?.headline, user?.location, user?.phone, user?.bio, user?.skills?.length];
+  const fields = [user?.headline, user?.location, user?.phone, user?.bio, user?.skills?.length, user?.portfolio?.length];
   const completion = Math.round((fields.filter(Boolean).length / fields.length) * 100);
 
   return (
@@ -182,6 +182,7 @@ export default function Profile() {
           </Group>
 
           <Group title="Job search" delay={300}>
+            <Row icon="layers-outline" label="Portfolio" value={user?.portfolio?.length ? `${user.portfolio.length} projects` : 'Add projects'} onPress={() => router.push('/portfolio')} />
             <Row icon="options-outline" label="Job preferences" value={user?.preferences?.jobTypes?.join(', ') || 'Set up'} onPress={() => router.push('/onboarding')} last />
           </Group>
 

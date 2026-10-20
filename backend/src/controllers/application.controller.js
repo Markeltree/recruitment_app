@@ -22,10 +22,23 @@ exports.apply = async (req, res) => {
   const existing = await Application.findOne({ user: req.user._id, job: job._id });
   if (existing) throw ApiError.conflict('You have already applied to this job');
 
+  // Snapshot the chosen portfolio projects (must belong to this user)
+  const wanted = [...new Set((req.body.portfolioIds || []).map(String))];
+  const attachments = (req.user.portfolio || [])
+    .filter((p) => wanted.includes(String(p._id)))
+    .map((p) => ({ portfolioId: p._id, title: p.title, description: p.description, link: p.link, role: p.role, skills: p.skills }));
+  if (attachments.length !== wanted.length) throw ApiError.badRequest('Some attached projects were not found in your portfolio');
+
+  const { expectedPay, availability } = req.body;
   const application = await Application.create({
     user: req.user._id,
     job: job._id,
     coverNote: req.body.coverNote,
+    proposal: {
+      expectedPay: expectedPay ? { ...expectedPay, currency: job.currency || 'USD' } : undefined,
+      availability,
+      attachments,
+    },
     statusHistory: [{ status: 'applied' }],
   });
 
@@ -46,7 +59,15 @@ exports.apply = async (req, res) => {
   });
 
   logActivity(req, 'application.submitted', {
-    meta: { applicationId: application._id, jobId: job._id, jobTitle: job.title, company: job.company, withCoverNote: !!req.body.coverNote },
+    meta: {
+      applicationId: application._id,
+      jobId: job._id,
+      jobTitle: job.title,
+      company: job.company,
+      withCoverNote: !!req.body.coverNote,
+      attachments: attachments.length,
+      expectedPay: expectedPay ? `${expectedPay.amount}/${expectedPay.period}` : undefined,
+    },
   });
 
   res.status(201).json({ success: true, data: application });

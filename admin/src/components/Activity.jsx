@@ -53,6 +53,9 @@ const ACTIONS = {
   'auth.password_changed': { icon: 'key', tone: 'violet', text: () => 'Changed password' },
   'auth.password_change_failed': { icon: 'alert', tone: 'amber', text: () => 'Password change failed (wrong current password)' },
   'profile.onboarded': { icon: 'check', tone: 'green', text: (m) => `Completed onboarding${m?.categories?.length ? ` · ${m.categories.join(', ')}` : ''}` },
+  'profile.portfolio_added': { icon: 'briefcase', tone: 'green', text: (m) => `Added portfolio project "${m?.title || ''}"` },
+  'profile.portfolio_updated': { icon: 'edit', tone: 'ink', text: (m) => `Edited portfolio project "${m?.title || ''}"` },
+  'profile.portfolio_removed': { icon: 'trash', tone: 'amber', text: (m) => `Removed portfolio project "${m?.title || ''}"` },
   'profile.updated': { icon: 'edit', tone: 'ink', text: (m) => `Updated profile${m?.fields?.length ? `: ${m.fields.join(', ')}` : ''}` },
   'job.viewed': { icon: 'eye', tone: 'ink', text: (m) => `Viewed ${job(m)}` },
   'job.saved': { icon: 'bookmark', tone: 'brand', text: (m) => `Saved ${job(m)}` },
@@ -61,7 +64,14 @@ const ACTIONS = {
   'job.created': { icon: 'briefcase', tone: 'green', text: (m) => `Posted ${job(m)}` },
   'job.updated': { icon: 'edit', tone: 'ink', text: (m) => `Edited ${job(m)}` },
   'job.deleted': { icon: 'trash', tone: 'rose', text: (m) => `Deleted ${job(m)}` },
-  'application.submitted': { icon: 'send', tone: 'green', text: (m) => `Applied to ${job(m)}${m?.withCoverNote ? ' with a cover note' : ''}` },
+  'application.submitted': {
+    icon: 'send',
+    tone: 'green',
+    text: (m) => {
+      const extras = [m?.withCoverNote && 'cover letter', m?.attachments && `${m.attachments} project${m.attachments > 1 ? 's' : ''}`, m?.expectedPay && `rate ${m.expectedPay}`].filter(Boolean);
+      return `Sent a proposal for ${job(m)}${extras.length ? ` · ${extras.join(', ')}` : ''}`;
+    },
+  },
   'application.withdrawn': { icon: 'undo', tone: 'amber', text: (m) => `Withdrew application for ${job(m)}` },
   'application.status_changed': { icon: 'flag', tone: 'violet', text: (m) => `Application for ${job(m)} moved ${m?.from || '?'} → ${m?.to || '?'}` },
   'ai.cover_note': { icon: 'sparkles', tone: 'violet', text: (m) => `Generated an AI cover note for ${job(m)}${m?.tone ? ` (${m.tone})` : ''}` },

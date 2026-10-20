@@ -61,12 +61,17 @@ export const swipesApi = {
 
 export const applicationsApi = {
   mine: () => api.get('/applications/me').then((r) => r.data.data),
-  apply: (jobId, coverNote) => api.post(`/applications/${jobId}`, { coverNote }).then((r) => r.data.data),
+  // body: { coverNote, expectedPay: { amount, period }, availability, portfolioIds }
+  apply: (jobId, body) => api.post(`/applications/${jobId}`, body).then((r) => r.data.data),
   withdraw: (id) => api.post(`/applications/${id}/withdraw`).then((r) => r.data.data),
 };
 
 export const userApi = {
   update: (body) => api.patch('/users/me', body).then((r) => r.data.user),
+  // Portfolio endpoints return the full, updated portfolio array
+  addProject: (body) => api.post('/users/me/portfolio', body).then((r) => r.data.data),
+  updateProject: (id, body) => api.patch(`/users/me/portfolio/${id}`, body).then((r) => r.data.data),
+  removeProject: (id) => api.delete(`/users/me/portfolio/${id}`).then((r) => r.data.data),
   stats: () => api.get('/users/me/stats').then((r) => r.data.data),
   deleteAccount: () => api.delete('/users/me').then((r) => r.data),
 };

@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Share, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Share, Text, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import Animated, {
   Extrapolation,
   FadeIn,
   FadeInDown,
   FadeInUp,
-  FadeOut,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -15,19 +14,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
-import AiButton from '../../components/AiSparkle';
 import AiMatchCard from '../../components/AiMatchCard';
 import Button from '../../components/Button';
-import Chip from '../../components/Chip';
 import CompanyLogo from '../../components/CompanyLogo';
 import EmptyState from '../../components/EmptyState';
 import IconButton from '../../components/IconButton';
-import Input from '../../components/Input';
-import Skeleton from '../../components/Skeleton';
 import StatusBadge from '../../components/StatusBadge';
-import SuccessBurst from '../../components/SuccessBurst';
-import { aiApi, applicationsApi, jobsApi, swipesApi } from '../../lib/api';
+import { jobsApi, swipesApi } from '../../lib/api';
 import { formatSalary, shadow, timeAgo } from '../../constants/theme';
 
 export default function JobDetail() {
@@ -37,75 +30,21 @@ export default function JobDetail() {
   const scrollY = useSharedValue(0);
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [note, setNote] = useState('');
-  const [showNote, setShowNote] = useState(false);
-  const [applying, setApplying] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [celebrate, setCelebrate] = useState(false);
-  const [tone, setTone] = useState('professional');
-  const [drafting, setDrafting] = useState(false);
-  const [aiDrafted, setAiDrafted] = useState(false);
-  const [noteError, setNoteError] = useState('');
-  const typing = useRef(null);
 
-  useEffect(() => () => cancelAnimationFrame(typing.current), []);
-
-  useEffect(() => {
-    jobsApi
-      .get(id)
-      .then((j) => {
-        setJob(j);
-        setSaved(j.swipe === 'save');
-      })
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  const apply = async () => {
-    setError('');
-    setApplying(true);
-    try {
-      await applicationsApi.apply(id, note.trim() || undefined);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      setSuccess(true);
-      setCelebrate(true);
-      setJob((j) => ({ ...j, applied: true, applicationStatus: 'applied' }));
-    } catch (err) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      setError(err.message);
-    } finally {
-      setApplying(false);
-    }
-  };
-
-  // Reveal the AI draft a few characters per frame, like it is being typed
-  const typeOut = (text) => {
-    cancelAnimationFrame(typing.current);
-    let i = 0;
-    const step = () => {
-      i = Math.min(text.length, i + 6);
-      setNote(text.slice(0, i));
-      if (i < text.length) typing.current = requestAnimationFrame(step);
-    };
-    step();
-  };
-
-  const writeWithAi = async () => {
-    setShowNote(true);
-    setNoteError('');
-    setDrafting(true);
-    try {
-      const draft = await aiApi.coverNote(id, tone);
-      setAiDrafted(true);
-      typeOut(draft);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    } catch (err) {
-      setNoteError(err.message);
-    } finally {
-      setDrafting(false);
-    }
-  };
+  // Reload on focus so returning from the proposal screen shows the applied state
+  useFocusEffect(
+    useCallback(() => {
+      jobsApi
+        .get(id)
+        .then((j) => {
+          setJob(j);
+          setSaved(j.swipe === 'save');
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, [id])
+  );
 
   const toggleSave = async () => {
     const next = !saved;
@@ -159,7 +98,7 @@ export default function JobDetail() {
     );
   }
 
-  const applied = job.applied || success;
+  const applied = job.applied;
 
   return (
     <View className="flex-1 bg-background">
@@ -259,67 +198,6 @@ export default function JobDetail() {
             </Section>
           ) : null}
 
-          {showNote && !applied ? (
-            <Section
-              title="Cover note"
-              icon="create-outline"
-              right={<AiButton size="sm" title={note ? 'Rewrite' : 'Write with AI'} busy={drafting} onPress={writeWithAi} />}
-            >
-              <View className="mb-3 flex-row gap-2">
-                {[
-                  ['professional', 'Professional'],
-                  ['friendly', 'Friendly'],
-                  ['concise', 'Concise'],
-                ].map(([k, l]) => (
-                  <Chip key={k} label={l} selected={tone === k} onPress={() => setTone(k)} />
-                ))}
-              </View>
-              <View>
-                <Input
-                  multiline
-                  autoFocus={!drafting}
-                  editable={!drafting}
-                  value={note}
-                  onChangeText={(v) => {
-                    cancelAnimationFrame(typing.current);
-                    setNote(v);
-                  }}
-                  maxLength={1000}
-                  placeholder="Why are you a great fit for this role?"
-                  hint={aiDrafted ? `AI draft · review and edit before sending · ${note.length}/1000` : `${note.length}/1000 · optional`}
-                  className="mb-0"
-                />
-                {drafting ? (
-                  <Animated.View
-                    entering={FadeIn}
-                    exiting={FadeOut}
-                    pointerEvents="none"
-                    className="absolute left-0 right-0 top-0 items-center justify-center rounded-2xl bg-white/85"
-                    style={{ height: 128 }}
-                  >
-                    <Text className="text-sm font-semibold text-violet-700">Writing your note…</Text>
-                    <View className="mt-3 w-2/3">
-                      <Skeleton height={10} />
-                      <Skeleton height={10} width="80%" style={{ marginTop: 8 }} />
-                    </View>
-                  </Animated.View>
-                ) : null}
-              </View>
-              {noteError ? (
-                <Animated.View entering={FadeInDown} className="mt-3 flex-row items-center">
-                  <Ionicons name="alert-circle" size={15} color="#E11D48" />
-                  <Text className="ml-1.5 flex-1 text-xs font-medium text-danger">{noteError}</Text>
-                </Animated.View>
-              ) : null}
-            </Section>
-          ) : null}
-
-          {error ? (
-            <Animated.View entering={FadeInDown} className="mt-4 flex-row items-center rounded-2xl bg-rose-50 p-3">
-              <Ionicons name="alert-circle" size={18} color="#E11D48" />
-              <Text className="ml-2 flex-1 text-sm font-medium text-danger">{error}</Text>
-            </Animated.View>
-          ) : null}
         </View>
       </Animated.ScrollView>
 
@@ -335,45 +213,36 @@ export default function JobDetail() {
               <Ionicons name="checkmark" size={22} color="#fff" />
             </View>
             <View className="ml-3 flex-1">
-              <Text className="text-[15px] font-bold text-ink-900">Application sent</Text>
+              <Text className="text-[15px] font-bold text-ink-900">Proposal sent</Text>
               <Text className="text-xs text-ink-500">You will be notified when the employer responds.</Text>
             </View>
             <StatusBadge status={job.applicationStatus || 'applied'} />
           </Animated.View>
         ) : (
           <View>
-            {!showNote ? (
-              <View className="mb-3 flex-row items-center justify-center gap-4">
-                <Pressable onPress={() => setShowNote(true)} className="flex-row items-center" hitSlop={6}>
-                  <Ionicons name="add-circle-outline" size={16} color="#2F6BFF" />
-                  <Text className="ml-1 text-sm font-semibold text-brand-600">Add a cover note</Text>
-                </Pressable>
-                <Text className="text-ink-300">|</Text>
-                <Pressable onPress={writeWithAi} className="flex-row items-center" hitSlop={6}>
-                  <Ionicons name="sparkles" size={14} color="#7C3AED" />
-                  <Text className="ml-1 text-sm font-semibold text-violet-700">Write with AI</Text>
-                </Pressable>
-              </View>
-            ) : null}
+            <View className="mb-3 flex-row items-center justify-center">
+              <Ionicons name="sparkles" size={13} color="#7C3AED" />
+              <Text className="ml-1.5 text-xs font-medium text-ink-500">Cover letter, rate and past work · AI can draft it for you</Text>
+            </View>
             <View className="flex-row items-center gap-4">
               <View style={{ maxWidth: '42%' }}>
                 <Text className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Salary</Text>
-                <Text className="text-[15px] font-bold text-ink-900" numberOfLines={1}>{formatSalary(job.salaryMin, job.salaryMax, job.currency)}</Text>
+                <Text className="text-[15px] font-bold text-ink-900" numberOfLines={1}>
+                  {formatSalary(job.salaryMin, job.salaryMax, job.currency)}
+                </Text>
               </View>
-              <Button title="Apply now" onPress={apply} loading={applying} disabled={drafting} className="flex-1" icon={<Ionicons name="paper-plane" size={17} color="#fff" />} />
+              <Button
+                title="Send proposal"
+                onPress={() => router.push(`/proposal/${id}`)}
+                className="flex-1"
+                iconRight
+                icon={<Ionicons name="arrow-forward" size={17} color="#fff" />}
+              />
             </View>
           </View>
         )}
       </Animated.View>
 
-      {celebrate ? (
-        <SuccessBurst
-          title="Application sent!"
-          subtitle={`${job.company} will review your profile. We'll keep you posted on every update.`}
-          primary={{ title: 'Track application', onPress: () => router.navigate('/(tabs)/applications') }}
-          secondary={{ title: 'Keep exploring', onPress: () => setCelebrate(false) }}
-        />
-      ) : null}
     </View>
   );
 }

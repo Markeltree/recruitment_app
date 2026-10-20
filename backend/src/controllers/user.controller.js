@@ -18,6 +18,35 @@ exports.updateProfile = async (req, res) => {
   res.json({ success: true, user: req.user.toSafeJSON() });
 };
 
+const MAX_PORTFOLIO_ITEMS = 20;
+
+exports.addPortfolioItem = async (req, res) => {
+  if (req.user.portfolio.length >= MAX_PORTFOLIO_ITEMS) throw ApiError.badRequest(`You can save up to ${MAX_PORTFOLIO_ITEMS} projects`);
+  req.user.portfolio.push(req.body);
+  await req.user.save();
+  logActivity(req, 'profile.portfolio_added', { meta: { title: req.body.title } });
+  res.status(201).json({ success: true, data: req.user.portfolio });
+};
+
+exports.updatePortfolioItem = async (req, res) => {
+  const item = req.user.portfolio.id(req.params.itemId);
+  if (!item) throw ApiError.notFound('Project not found');
+  item.set(req.body);
+  await req.user.save();
+  logActivity(req, 'profile.portfolio_updated', { meta: { title: item.title } });
+  res.json({ success: true, data: req.user.portfolio });
+};
+
+exports.removePortfolioItem = async (req, res) => {
+  const item = req.user.portfolio.id(req.params.itemId);
+  if (!item) throw ApiError.notFound('Project not found');
+  const { title } = item;
+  item.deleteOne();
+  await req.user.save();
+  logActivity(req, 'profile.portfolio_removed', { meta: { title } });
+  res.json({ success: true, data: req.user.portfolio });
+};
+
 exports.stats = async (req, res) => {
   const grouped = await Application.aggregate([
     { $match: { user: req.user._id } },
