@@ -7,12 +7,18 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://recruitment-app-puce.vercel.app/api/v1" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://recruitment-app-puce.vercel.app/api/v1",
+        "EXPO_PUBLIC_WEBSITE_URL": "https://recruitment-app-onk3.vercel.app"
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://recruitment-app-puce.vercel.app/api/v1" }
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://recruitment-app-puce.vercel.app/api/v1",
+        "EXPO_PUBLIC_WEBSITE_URL": "https://recruitment-app-onk3.vercel.app"
+      }
     }
   },
   "submit": {
