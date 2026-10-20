@@ -15,9 +15,14 @@ export const useAuth = create((set, get) => ({
       set({ token });
       const user = await authApi.me();
       set({ user, booting: false });
-    } catch {
-      await tokenStorage.clear();
-      set({ user: null, token: null, booting: false });
+    } catch (err) {
+      // Only a rejected token ends the session; a timeout or network error (e.g. API cold start) keeps it
+      if (err.status === 401) {
+        await tokenStorage.clear();
+        set({ user: null, token: null, booting: false });
+      } else {
+        set({ user: null, booting: false });
+      }
     }
   },
 
