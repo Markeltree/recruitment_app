@@ -9,6 +9,7 @@ import AuthHero from '../../components/AuthHero';
 import { Divider, PasswordStrength, SegmentedSwitch } from '../../components/AuthBits';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import LegalLinks from '../../components/LegalLinks';
 import { useAuth } from '../../store/auth';
 
 const ROLES = [
@@ -172,7 +173,7 @@ export default function Register() {
                 iconRight
                 icon={<Ionicons name="arrow-forward" size={18} color="#fff" />}
               />
-              <Text className="mt-3 text-center text-xs leading-[18px] text-ink-400">By creating an account you agree to our Terms and Privacy Policy.</Text>
+              <LegalLinks prefix="By creating an account you agree to our" className="mt-3 text-center text-xs leading-[18px] text-ink-400" linkClassName="text-ink-500" />
             </Animated.View>
 
             <View className="flex-1" />

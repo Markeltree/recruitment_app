@@ -34,6 +34,22 @@ api.interceptors.response.use(
   }
 );
 
+// Bare client for public pages: never sends the stored admin token or triggers an admin logout
+const publicClient = axios.create({ baseURL: api.defaults.baseURL, timeout: 20000 });
+const publicError = (error) => {
+  const err = new Error(error.response?.data?.message || error.message || 'Request failed');
+  err.status = error.response?.status;
+  throw err;
+};
+
+export const publicApi = {
+  // Web account-deletion flow (required by Google Play): sign in as the user, then delete
+  deleteAccount: async ({ email, password }) => {
+    const { token } = await publicClient.post('/auth/login', { email, password }).then((r) => r.data, publicError);
+    return publicClient.delete('/users/me', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.data, publicError);
+  },
+};
+
 export const adminApi = {
   login: (body) => api.post('/auth/login', body).then((r) => r.data),
   me: () => api.get('/auth/me').then((r) => r.data.user),

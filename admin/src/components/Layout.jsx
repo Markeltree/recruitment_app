@@ -6,7 +6,7 @@ const sections = [
   {
     title: 'Overview',
     items: [
-      { to: '/', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
+      { to: '/dashboard', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
       { to: '/activity', label: 'Activity', icon: 'M22 12h-4l-3 9L9 3l-3 9H2' },
     ],
   },
@@ -109,7 +109,7 @@ export default function Layout() {
     navigate('/login');
   };
 
-  const current = allItems.find((i) => (i.to === '/' ? pathname === '/' : pathname.startsWith(i.to))) || allItems[0];
+  const current = allItems.find((i) => pathname.startsWith(i.to)) || allItems[0];
   const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
@@ -128,7 +128,6 @@ export default function Layout() {
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    end={item.to === '/'}
                     className={({ isActive }) =>
                       `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                         isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-500 hover:bg-ink-50 hover:text-ink-900'
@@ -186,7 +185,6 @@ export default function Layout() {
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/'}
               className={({ isActive }) =>
                 `whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${isActive ? 'bg-ink-900 text-white' : 'bg-ink-100 text-ink-700'}`
               }

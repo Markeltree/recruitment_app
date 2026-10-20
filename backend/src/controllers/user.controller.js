@@ -2,6 +2,8 @@ const User = require('../models/User');
 const Application = require('../models/Application');
 const MatchInsight = require('../models/MatchInsight');
 const ActivityLog = require('../models/ActivityLog');
+const Swipe = require('../models/Swipe');
+const Notification = require('../models/Notification');
 const ApiError = require('../utils/ApiError');
 const { logActivity } = require('../utils/activity');
 
@@ -67,6 +69,8 @@ exports.deleteAccount = async (req, res) => {
   if (req.user.role === 'admin') throw ApiError.forbidden('Admin accounts cannot be self-deleted');
   await Application.deleteMany({ user: req.user._id });
   await MatchInsight.deleteMany({ user: req.user._id });
+  await Swipe.deleteMany({ user: req.user._id });
+  await Notification.deleteMany({ user: req.user._id });
   // A deleted account's history goes with it
   await ActivityLog.deleteMany({ user: req.user._id });
   await User.deleteOne({ _id: req.user._id });

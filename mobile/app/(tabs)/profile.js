@@ -16,6 +16,8 @@ import AnimatedCounter from '../../components/AnimatedCounter';
 import Avatar from '../../components/Avatar';
 import PressableScale from '../../components/PressableScale';
 import ProgressRing from '../../components/ProgressRing';
+import { openLegalPage } from '../../components/LegalLinks';
+import { WEBSITE_URL } from '../../constants/config';
 import { userApi } from '../../lib/api';
 import { shadow } from '../../constants/theme';
 import { useAuth } from '../../store/auth';
@@ -95,8 +97,12 @@ export default function Profile() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await userApi.deleteAccount();
-          logout();
+          try {
+            await userApi.deleteAccount();
+            logout();
+          } catch (err) {
+            Alert.alert('Could not delete account', err.message);
+          }
         },
       },
     ]);
@@ -185,6 +191,13 @@ export default function Profile() {
             <Row icon="layers-outline" label="Portfolio" value={user?.portfolio?.length ? `${user.portfolio.length} projects` : 'Add projects'} onPress={() => router.push('/portfolio')} />
             <Row icon="options-outline" label="Job preferences" value={user?.preferences?.jobTypes?.join(', ') || 'Set up'} onPress={() => router.push('/onboarding')} last />
           </Group>
+
+          {WEBSITE_URL ? (
+            <Group title="About" delay={330}>
+              <Row icon="shield-checkmark-outline" label="Privacy policy" onPress={() => openLegalPage('/privacy')} />
+              <Row icon="document-text-outline" label="Terms of service" onPress={() => openLegalPage('/terms')} last />
+            </Group>
+          ) : null}
 
           <Group title="Session" delay={360}>
             <Row icon="log-out-outline" label="Sign out" onPress={confirmLogout} />

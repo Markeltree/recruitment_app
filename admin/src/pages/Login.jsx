@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 
 export default function Login() {
@@ -11,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (user) return <Navigate to={location.state?.from || '/'} replace />;
+  if (user) return <Navigate to={location.state?.from || '/dashboard'} replace />;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate(location.state?.from || '/', { replace: true });
+      navigate(location.state?.from || '/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,6 +62,10 @@ export default function Login() {
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+
+        <Link to="/" className="mt-6 block text-center text-sm font-medium text-ink-300 transition hover:text-white">
+          ← Back to home
+        </Link>
       </div>
     </div>
   );

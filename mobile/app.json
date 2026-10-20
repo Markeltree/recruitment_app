@@ -42,7 +42,13 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "https://recruitment-app-puce.vercel.app/api/v1"
+      "apiUrl": "https://recruitment-app-puce.vercel.app/api/v1",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "81d0cc94-dd50-4ad6-8540-0184228078c0"
+      }
     }
   }
 }

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import Button from '../components/Button';
 import CompanyLogo from '../components/CompanyLogo';
+import LegalLinks from '../components/LegalLinks';
 
 // Illustration-only sample cards
 const SAMPLE = [
@@ -152,9 +153,9 @@ export default function Welcome() {
             />
             <Button title="I already have an account" variant="glass" onPress={() => router.push('/(auth)/login')} />
           </Animated.View>
-          <Animated.Text entering={FadeIn.delay(1000)} className="mt-4 text-center text-xs text-white/55">
-            By continuing you agree to our Terms and Privacy Policy.
-          </Animated.Text>
+          <Animated.View entering={FadeIn.delay(1000)}>
+            <LegalLinks prefix="By continuing you agree to our" className="mt-4 text-center text-xs text-white/55" linkClassName="text-white/80" />
+          </Animated.View>
         </View>
       </SafeAreaView>
     </LinearGradient>
