@@ -17,6 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2F6BFF"
       },
       "package": "app.applyup.mobile"

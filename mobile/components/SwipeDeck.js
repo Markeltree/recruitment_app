@@ -120,6 +120,14 @@ function SwipeCard({ job, isTop, depth, onSwiped, command, commandDir, dragX }) 
     };
   });
 
+  // Cards behind the top one keep their content hidden (it otherwise ghosts through the top
+  // card on Android); the next card's content fades in as the top card is dragged away.
+  const contentStyle = useAnimatedStyle(() => {
+    if (isTop) return { opacity: 1 };
+    if (depth > 1) return { opacity: 0 };
+    return { opacity: Math.min(Math.abs(dragX.value) / SWIPE_THRESHOLD, 1) };
+  });
+
   const likeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD * 0.8], [0, 1], Extrapolation.CLAMP),
     transform: [{ rotate: '-12deg' }, { scale: interpolate(translateX.value, [0, SWIPE_THRESHOLD], [0.6, 1], Extrapolation.CLAMP) }],
@@ -159,6 +167,7 @@ function SwipeCard({ job, isTop, depth, onSwiped, command, commandDir, dragX }) 
             <Text className="ml-1 text-xl font-extrabold tracking-widest text-danger">PASS</Text>
           </Animated.View>
 
+          <Animated.View className="flex-1" style={contentStyle}>
           <View className="px-6 pt-6">
             <View className="flex-row items-center">
               <CompanyLogo name={job.company} uri={job.companyLogo} size={52} />
@@ -216,6 +225,7 @@ function SwipeCard({ job, isTop, depth, onSwiped, command, commandDir, dragX }) 
             <Ionicons name="hand-left-outline" size={13} color="#64748B" />
             <Text className="ml-1.5 text-xs font-semibold text-ink-500">Swipe to decide · tap for details</Text>
           </View>
+          </Animated.View>
         </View>
       </Animated.View>
     </GestureDetector>
